@@ -1,5 +1,22 @@
 <template>
   <div class="">
+    <div  :style="{fontSize: postFontSize  + 'em'}">
+      <BlogPost @enlarge-text="postFontSize += 0.1" title="Hello World" />
+    </div>
+    <ul>
+      <li v-for="item in list" ref="itemRefs">
+        {{ item }}
+      </li>
+    </ul>
+    <input ref="input" />
+    <input type="text" v-model.number="objv1.count">
+    <input type="text" v-model.number="x">
+    <input type="text" v-model.number="y">
+    <p>
+      Ask a yes/no question:
+      <input v-model="question" :disabled="loading" />
+    </p>
+    <p>{{ answer }}</p>
     <input v-model.lazy="msg" />
     {{ msg }}
     <input type="checkbox" v-model="toggle" true-value="yes" false-value="no" />
@@ -78,8 +95,101 @@
 </template>
 
 <script setup>
+import BlogPost from './views/BlogPost.vue';
+import { ref, nextTick, reactive, shallowReactive, isReactive, computed, watch, watchEffect, onMounted    } from 'vue'
+const postFontSize = ref(1)
+function increaseFontSize() {
+  postFontSize.value += 0.1;
+}
+const list = ref([
+  "A","B","C","D"
+])
+const itemRefs = ref([])
+onMounted(() => console.log(itemRefs.value))
+const input = ref(null)
+// onMounted(() => {
+//   input.value.focus()
+// })
+watchEffect(() => {
+  if (input.value) {
+    input.value.focus()
+  } else {
+    // not mounted yet, or the element was unmounted (e.g. by v-if)
+  }
+})
+const todoId = ref(null)
+const data = ref(null)
+watch(
+  todoId,
+  async () => {
+    const response = await fetch(
+      `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+    )
+    data.value = await response.json()
+  },
+  { immediate: true }
+)
+// TO :
+watchEffect(async () => {
+  const response = await fetch(
+    `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+  )
+  data.value = await response.json()
+})
+const objv1 = reactive({ count: 0 })
+watch(
+  () => objv1.count,
+  (newValue, oldValue) => {
+    console.log(newValue, oldValue);
+    // Note: `newValue` will be equal to `oldValue` here
+    // *unless* state.someObject has been replaced
+  },
+  { deep: true } //OPTIONAL FOR REACTIVE NESTED PROPERTY
+)
+const obj = reactive({ count: 0 })
+const x = ref(0)
+const y = ref(0)
 
-import { ref, nextTick, reactive, shallowReactive, isReactive, computed  } from 'vue'
+// single ref
+watch(x, (newX) => {
+  console.log(`x is ${newX}`)
+})
+
+// getter
+watch( () => x.value + y.value, (sum) => {
+    console.log(`sum of x + y is: ${sum}`)
+  }
+)
+// instead, use a getter:
+watch(
+  () => obj.count,
+  (count) => {
+    console.log(`Count is: ${count}`)
+  }
+)
+
+// array of multiple sources
+watch([x, () => y.value], ([newX, newY]) => {
+  console.log(`x is ${newX} and y is ${newY}`)
+})
+const question = ref('')
+const answer = ref('Questions usually contain a question mark. ;-)')
+const loading = ref(false)
+watch(question, async (newQuestion, oldQuestion) => {
+  if (newQuestion.includes('?')) {
+    loading.value = true
+    answer.value = 'Thinking...'
+    try {
+      const res = await fetch('https://yesno.wtf/api')
+      answer.value = (await res.json()).answer
+    } catch (error) {
+      answer.value = 'Error! Could not reach the API. ' + error
+    } finally {
+      loading.value = false
+    }
+  }
+})
+
 const msg = ref(null)
 const toggle = ref(null)
 const selected = ref('A')
