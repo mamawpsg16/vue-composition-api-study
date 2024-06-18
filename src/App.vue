@@ -1,5 +1,62 @@
 <template>
   <div class="">
+    <input type="text" id="texttext" ref="textInput">
+    <div v-click-outside="handleClickOutside">
+      Click outside of this box to trigger an event.
+    </div>
+    <h1 v-color="'lightblue'">This background color is light blue.</h1>
+    <input v-color="inputColor" v-model="inputColor" placeholder="Enter a color" />
+    <p>Mouse position is at: {{ xAxis }}, {{ yAxis }}</p>
+    <!-- <MouseTracker/> -->
+    <!-- /** PROJECT INJECT */ -->
+    <Parent>
+      <Intermediate>
+        <Child/>
+      </Intermediate>
+    </Parent>
+    <ScopedSlot :rows="rows" :headers="headers">
+      <template #default="{ obj, value, key, index }">
+        {{ value }}
+      </template>
+    </ScopedSlot>
+    <ConditionalSlot>
+      <template #header>
+        <h1>Conditional Header Slot</h1>
+      </template>
+
+      <template #default>
+        <p>Conditional Default Slot</p>
+      </template>
+
+      <template #footer>
+        <p>Conditional Footer Slot</p>
+      </template>
+    </ConditionalSlot>
+    <NamedSlot>
+      <template #header>
+        <h1>Here might be a page title</h1>
+      </template>
+
+      <template #default>
+        <p>A paragraph for the main content.</p>
+        <p>And another one.</p>
+      </template>
+
+      <template #footer>
+        <p>Here's some contact info</p>
+      </template>
+    </NamedSlot>
+    <Slot>
+      SLOT 
+    </Slot>
+    <br>
+    NEW WAY USING COMPONENT DATA BINDING 
+    <CompositionInput v-model.capitalize="newway"/>
+    <br>
+    OLD WAY USING COMPONENT DATA BINDING 
+    <Input v-model="oldway"/>
+    <p>Emit Value {{ emitValue }}</p>
+    <Test v-bind="propsPassed" @some-event="(payload) => emitValue += payload"/>
     <div  :style="{fontSize: postFontSize  + 'em'}">
       <BlogPost @enlarge-text="postFontSize += 0.1" title="Hello World" />
     </div>
@@ -95,8 +152,42 @@
 </template>
 
 <script setup>
+import { useMouse } from '@/composable/mouse.js'
+import MouseTracker from '@/components/MouseTracker.vue'
+import Parent from './components/ProvideInject/Parent.vue';
+import Intermediate from './components/ProvideInject/Intermediate.vue';
+import Child from './components/ProvideInject/Child.vue';
+import ScopedSlot from '@/components/ScopedSlot.vue';
+import ConditionalSlot from '@/components/ConditionalSlot.vue';
+import NamedSlot from '@/components/NamedSlot.vue';
+import Slot from '@/components/Slot.vue';
+import CompositionInput from '@/components/CompositionInput.vue';
+import Input from '@/components/Input.vue';
 import BlogPost from './views/BlogPost.vue';
-import { ref, nextTick, reactive, shallowReactive, isReactive, computed, watch, watchEffect, onMounted    } from 'vue'
+import { ref, nextTick, reactive, shallowReactive, isReactive, computed, watch, watchEffect, onMounted   } from 'vue'
+const textInput = ref(null);
+onMounted(() => console.log(textInput, 'texttext'));
+const handleClickOutside = (a = null) => {
+      alert('Clicked outside!');
+  };
+const inputColor = ref('lightgreen');
+const { xAxis, yAxis } = useMouse()
+const headers = reactive(["ID","Name","Age"]);
+const rows = reactive([
+  { id: 1, name: 'John Doe', age: 30 },
+  { id: 2, name: 'Jane Smith', age: 25 },
+  { id: 3, name: 'Emily Johnson', age: 35 }
+]);
+ 
+
+const newway = ref(null);
+const oldway = ref(null);
+const emitValue = ref(0);
+const propsPassed = reactive({
+  text:"Hello this is a prop",
+  isActive:true,
+  group:"Hallelujah",
+})
 const postFontSize = ref(1)
 function increaseFontSize() {
   postFontSize.value += 0.1;
@@ -282,4 +373,4 @@ const publishedBooksMessage = computed(() => {
 button {
   font-weight: bold;
 }
-</style>
+</style>@/composable/mouse.js
