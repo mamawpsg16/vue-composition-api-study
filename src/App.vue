@@ -1,5 +1,7 @@
 <template>
   <div class="">
+    <RecursiveComponent/>
+    <RenderComponent/>
     <input type="text" id="texttext" ref="textInput">
     <div v-click-outside="handleClickOutside">
       Click outside of this box to trigger an event.
@@ -152,6 +154,8 @@
 </template>
 
 <script setup>
+import RecursiveComponent from '@/components/RecursiveComponent/Index.vue';
+import RenderComponent from '@/components/RenderComponent.js';
 import { useMouse } from '@/composable/mouse.js'
 import MouseTracker from '@/components/MouseTracker.vue'
 import Parent from './components/ProvideInject/Parent.vue';
